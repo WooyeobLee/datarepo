@@ -81,7 +81,7 @@ if __name__ == '__main__':
         rsis = get_rsis(rates.keys())
         result = {key:{'rate': rates[key], 'rsi': rsis[key]} for key in rates}
         
-        os.system('cls')
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('자동 매도 프로그램 시작')
         print('------------------------------------------------------------')
         
