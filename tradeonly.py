@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import os
 
-def get_candle(ticker, unit, count=200, tick='minutes',):
+def get_candle(ticker, unit, count=200, tick='minutes'):
     url = f"https://api.upbit.com/v1/candles/{tick}/{unit}"
     response = requests.request('GET', url, params={'market':ticker, 'count':str(count)})
     return pd.DataFrame(response.json())[::-1].reset_index()
@@ -52,10 +52,10 @@ def get_revenue_rates(balances):
     else:
         return
     
-def print_state(ticker, state, excludes_flag=False):
+def print_state(ticker, state, unit, excludes_flag=False):
     if excludes_flag:
         ticker = ticker + '*'
-    print(f'코인: {ticker:<11} RSI: {state["rsi"]:10.5f} 수익률: {state["rate"]:10.5f}%, 가격: {state["price"]:10.1f}, 평가손익: {state["profit"]:10.2f}, 평가금액: {state["value"]:10.2f}')
+    print(f'코인: {ticker:<11} RSI({unit}): {state["rsi"]:10.5f} 수익률: {state["rate"]:10.5f}%, 가격: {state["price"]:10.1f}, 평가손익: {state["profit"]:10.2f}, 평가금액: {state["value"]:10.2f}')
 
 def sell(ticker):
     balance = upbit.get_balance(ticker)
@@ -67,14 +67,16 @@ if __name__ == '__main__':
     target_rate_min = float(sys.argv[1])
     target_rate_max = float(sys.argv[2])
     threshold_rsi = float(sys.argv[3])
+    unit = int(sys.argv[4])
     
     excludes = []
 
-    if len(sys.argv) == 5:
-        if bool(sys.argv[3].title()):
+    if len(sys.argv) == 6:
+        if bool(sys.argv[5].title()):
             with open('excludes.txt', 'r') as f:
                 data = f.readlines()
                 excludes = [coin.strip() for coin in data]
+    
     
     access = 'NRQ5oEIxfrDx0D94BixOLC5xHdsGxxrTwzLGJZSh'
     secret = 'K9nM1xMCylgM5NKHDxsdf3eq7ZJdzZJtkRXymRyB'
@@ -92,7 +94,7 @@ if __name__ == '__main__':
             continue
         
         rates, prices = get_revenue_rates(balances)
-        rsis = get_rsis(rates.keys(), unit=60)
+        rsis = get_rsis(rates.keys(), unit)
         result = {key:{'rate': rates[key], 'rsi': rsis[key], 'price': prices[key], 'value': prices[key]*balances2[key], 'profit': prices[key]*balances2[key]-평가손익[key]} for key in rates}
         
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -100,7 +102,7 @@ if __name__ == '__main__':
         print('------------------------------------------------------------')
         
         for ticker in result:
-            print_state(ticker, result[ticker], (ticker in excludes))
+            print_state(ticker, result[ticker], unit, (ticker in excludes))
             rate = result[ticker]['rate']
             rsi = result[ticker]['rsi']
 
