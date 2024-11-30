@@ -1,4 +1,3 @@
-%%writefile tradeonly.py
 import time
 import sys
 import pyupbit
