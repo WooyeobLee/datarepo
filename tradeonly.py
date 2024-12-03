@@ -55,7 +55,7 @@ def get_revenue_rates(balances):
 def print_state(ticker, state, unit, excludes_flag=False):
     if excludes_flag:
         ticker = ticker + '*'
-    print(f'코인: {ticker:<11} RSI({unit}): {state["rsi"]:10.5f} 수익률: {state["rate"]:10.5f}%, 가격: {state["price"]:10.1f}, 평가손익: {state["profit"]:10.2f}, 평가금액: {state["value"]:10.2f}')
+    print(f'코인: {ticker:<11} RSI({unit}): {state["rsi"]:10.5f} 수익률: {state["rate"]:10.5f}%, 가격: {state["price"]:10.4f}, 평가손익: {state["profit"]:10.2f}, 평가금액: {state["value"]:10.2f}')
 
 def sell(ticker):
     balance = upbit.get_balance(ticker)
@@ -101,10 +101,15 @@ if __name__ == '__main__':
         print('자동 매도 프로그램 시작')
         print('------------------------------------------------------------')
         
+        profits = 0
+        values = 0
+        
         for ticker in result:
             print_state(ticker, result[ticker], unit, (ticker in excludes))
             rate = result[ticker]['rate']
             rsi = result[ticker]['rsi']
+            profits += result[ticker]['profit']
+            values += result[ticker]['value']
 
             if rate >= target_rate_min and (ticker not in excludes):
                 if rsi < threshold_rsi:
@@ -116,4 +121,5 @@ if __name__ == '__main__':
                 print('매도 예외 코인')
             else:
                 print(f'매도 목표 미도달(최소 목표까지 {target_rate_min-rate:7.3f}%)')
+        print(f'전체 수익률: {profits / (values-profits) * 100:10.5f}%, 전체 평가손익: {profits:10.2f}, 전체 평가금액: {values:10.2f}')
         time.sleep(1)
